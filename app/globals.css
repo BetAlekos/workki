@@ -1,26 +1,61 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@theme {
+  /* Brand colors — deep blue scale */
+  --color-brand-50: #f0f9ff;
+  --color-brand-100: #e0f2fe;
+  --color-brand-200: #bae6fd;
+  --color-brand-300: #7dd3fc;
+  --color-brand-400: #38bdf8;
+  --color-brand-500: #0ea5e9;
+  --color-brand-600: #0284c7;
+  --color-brand-700: #0369a1;
+  --color-brand-800: #075985;
+  --color-brand-900: #0c4a6e;
+  --color-brand-950: #082f49;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Featured / gold */
+  --color-featured-50: #fffbeb;
+  --color-featured-100: #fef3c7;
+  --color-featured-400: #fbbf24;
+  --color-featured-500: #f59e0b;
+  --color-featured-600: #d97706;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Font families — Syne (headings) + Instrument Sans (body) */
+  --font-heading: var(--font-syne);
+  --font-sans: var(--font-instrument-sans);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Job card left-border hover accent */
+.job-card {
+  border-left: 3px solid transparent;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+.job-card:hover {
+  border-left-color: #0c4a6e;
+  box-shadow: 0 4px 24px 0 rgba(12, 74, 110, 0.10);
+  transform: translateY(-1px);
+}
+.job-card.featured {
+  border-left-color: #f59e0b;
+}
+
+/* Prose for job descriptions */
+.job-description h2 { font-size: 1.125rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+.job-description h3 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.5rem; }
+.job-description p { margin-bottom: 0.75rem; line-height: 1.7; }
+.job-description ul, .job-description ol { padding-left: 1.5rem; margin-bottom: 0.75rem; }
+.job-description li { margin-bottom: 0.25rem; line-height: 1.6; }
+.job-description strong { font-weight: 600; }
