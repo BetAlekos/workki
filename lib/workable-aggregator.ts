@@ -77,6 +77,24 @@ async function fetchWithTimeout(url: string, opts: RequestInit = {}, ms = 10_000
 }
 
 /**
+ * Verify a company exists on Workable by probing the JSON API.
+ * Returns true if the company account is found (200 or has jobs).
+ */
+export async function verifyCompany(slug: string): Promise<boolean> {
+  const url = `https://apply.workable.com/api/v3/accounts/${slug}/jobs`
+  try {
+    const res = await fetchWithTimeout(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '' }),
+    }, 8_000)
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
+/**
  * Fetch job list from Workable public JSON API.
  * Returns null on 404 (company not on Workable).
  */
@@ -138,7 +156,8 @@ export interface AggregatorResult {
 }
 
 export async function runAggregator(
-  log: (msg: string) => void = console.log
+  log: (msg: string) => void = console.log,
+  companies = WORKABLE_COMPANIES
 ): Promise<AggregatorResult> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -153,7 +172,11 @@ export async function runAggregator(
   let skipped = 0
   const errors: string[] = []
 
-  for (const company of WORKABLE_COMPANIES) {
+  for (let i = 0; i < companies.length; i++) {
+    const company = companies[i]
+    // Polite delay between companies (skip before first)
+    if (i > 0) await new Promise((r) => setTimeout(r, 800))
+
     let jobs: WorkableJob[] | null
     try {
       jobs = await fetchCompanyJobs(company.slug)
