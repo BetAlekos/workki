@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { Job } from '@/types'
 import { formatEmploymentType, formatSalary, timeAgo } from '@/lib/utils'
+import { SEASON_LABELS } from '@/lib/constants'
 
 interface JobCardProps {
   job: Job
@@ -16,16 +17,38 @@ export default function JobCard({ job }: JobCardProps) {
       : 'Εξ αποστάσεως'
     : locationParts.join(', ') || 'Ελλάδα'
 
+  const seasonInfo = job.is_seasonal && job.season ? SEASON_LABELS[job.season] : null
+  const seasonDates = job.season_start && job.season_end
+    ? `${new Date(job.season_start).toLocaleDateString('el-GR', { month: 'short' })} – ${new Date(job.season_end).toLocaleDateString('el-GR', { month: 'short', year: 'numeric' })}`
+    : null
+
+  const cardClass = job.is_seasonal ? 'seasonal' : job.is_featured ? 'featured' : ''
+
   return (
     <Link href={`/jobs/${job.slug}`} className="block group">
       <article
-        className={`job-card bg-white rounded-xl border border-slate-200 px-5 py-4 ${job.is_featured ? 'featured bg-featured-50 border-featured-400' : ''}`}
+        className={`job-card bg-white rounded-xl border px-5 py-4 ${
+          job.is_seasonal
+            ? 'border-seasonal-400 bg-seasonal-50'
+            : job.is_featured
+            ? 'border-featured-400 bg-featured-50'
+            : 'border-slate-200'
+        } ${cardClass}`}
       >
-        {job.is_featured && (
-          <div className="flex items-center gap-1 mb-2">
-            <span className="text-xs font-semibold text-featured-600 bg-featured-100 px-2 py-0.5 rounded-full">
-              ★ Προτεινόμενη
-            </span>
+        {/* Badges row */}
+        {(job.is_featured || job.is_seasonal) && (
+          <div className="flex items-center gap-2 mb-2">
+            {job.is_featured && (
+              <span className="text-xs font-semibold text-featured-600 bg-featured-100 px-2 py-0.5 rounded-full">
+                ★ Προτεινόμενη
+              </span>
+            )}
+            {seasonInfo && (
+              <span className="text-xs font-semibold text-seasonal-600 bg-seasonal-100 px-2 py-0.5 rounded-full">
+                {seasonInfo.emoji} {seasonInfo.label}
+                {seasonDates && ` · ${seasonDates}`}
+              </span>
+            )}
           </div>
         )}
 
@@ -37,6 +60,7 @@ export default function JobCard({ job }: JobCardProps) {
                 alt={`${job.company_name} logo`}
                 width={44}
                 height={44}
+                loading="lazy"
                 className="object-contain w-full h-full"
               />
             </div>

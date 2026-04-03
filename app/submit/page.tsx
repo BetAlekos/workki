@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { JOB_CATEGORIES, EMPLOYMENT_TYPE_LABELS, GREEK_CITIES } from '@/lib/constants'
+import { JOB_CATEGORIES, EMPLOYMENT_TYPE_LABELS, GREEK_CITIES, SEASON_LABELS } from '@/lib/constants'
 
 type FormState = 'idle' | 'loading' | 'success' | 'error'
 
@@ -27,8 +27,12 @@ export default function SubmitPage() {
         body: JSON.stringify({
           ...data,
           is_remote: data.is_remote === 'true',
+          is_seasonal: data.is_seasonal === 'true',
           salary_min: data.salary_min ? Number(data.salary_min) : null,
           salary_max: data.salary_max ? Number(data.salary_max) : null,
+          season: data.season || null,
+          season_start: data.season_start || null,
+          season_end: data.season_end || null,
         }),
       })
 
@@ -62,7 +66,7 @@ export default function SubmitPage() {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
           <h1
             className="text-2xl font-bold text-slate-900 mb-1"
-            style={{ fontFamily: 'var(--font-syne)' }}
+            style={{ fontFamily: 'var(--font-bricolage)' }}
           >
             Δημοσίευση αγγελίας
           </h1>
@@ -270,6 +274,53 @@ export default function SubmitPage() {
                       <option value="HOUR">Ανά ώρα</option>
                       <option value="DAY">Ανά ημέρα</option>
                     </select>
+                  </div>
+                </div>
+              </fieldset>
+
+              <div className="border-t border-slate-100" />
+
+              {/* Seasonal */}
+              <fieldset className="space-y-4">
+                <legend className="text-sm font-semibold text-slate-700 mb-1">Εποχιακή θέση (προαιρετικό)</legend>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Είναι εποχιακή θέση;</label>
+                  <select
+                    name="is_seasonal"
+                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  >
+                    <option value="false">Όχι</option>
+                    <option value="true">Ναι</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Εποχή</label>
+                    <select
+                      name="season"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                    >
+                      <option value="">—</option>
+                      {Object.entries(SEASON_LABELS).map(([key, val]) => (
+                        <option key={key} value={key}>{val.emoji} {val.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Από</label>
+                    <input
+                      name="season_start"
+                      type="date"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Έως</label>
+                    <input
+                      name="season_end"
+                      type="date"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
                   </div>
                 </div>
               </fieldset>

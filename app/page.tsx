@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import JobCard from '@/components/JobCard'
@@ -7,13 +8,29 @@ import SearchBar from '@/components/SearchBar'
 import FilterBar from '@/components/FilterBar'
 import { createClient } from '@/lib/supabase/server'
 import type { Job, JobFilters } from '@/types'
-import { SITE_NAME, SITE_DESCRIPTION } from '@/lib/constants'
+import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, CITY_PAGES, CATEGORY_SLUGS, JOB_CATEGORIES } from '@/lib/constants'
 
 export const revalidate = 3600
 
 export const metadata: Metadata = {
   title: `${SITE_NAME} — Αγγελίες Εργασίας στην Ελλάδα`,
   description: SITE_DESCRIPTION,
+}
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: 'Αγγελίες εργασίας στην Ελλάδα',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${SITE_URL}/?q={search_term_string}`,
+    },
+    'query-input': 'required name=search_term_string',
+  },
 }
 
 async function getJobs(filters: JobFilters): Promise<Job[]> {
@@ -33,22 +50,26 @@ async function getJobs(filters: JobFilters): Promise<Job[]> {
       `title.ilike.%${filters.q}%,company_name.ilike.%${filters.q}%,description.ilike.%${filters.q}%`
     )
   }
-  if (filters.category) {
-    query = query.eq('category', filters.category)
-  }
-  if (filters.type) {
-    query = query.eq('employment_type', filters.type)
-  }
-  if (filters.remote === 'true') {
-    query = query.eq('is_remote', true)
-  } else if (filters.remote === 'false') {
-    query = query.eq('is_remote', false)
-  }
-  if (filters.location) {
-    query = query.ilike('location_city', `%${filters.location}%`)
-  }
+  if (filters.category) query = query.eq('category', filters.category)
+  if (filters.type) query = query.eq('employment_type', filters.type)
+  if (filters.remote === 'true') query = query.eq('is_remote', true)
+  else if (filters.remote === 'false') query = query.eq('is_remote', false)
+  if (filters.location) query = query.ilike('location_city', `%${filters.location}%`)
 
   const { data } = await query
+  return (data as Job[]) || []
+}
+
+async function getSeasonalJobs(): Promise<Job[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('is_approved', true)
+    .eq('is_seasonal', true)
+    .order('is_featured', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(3)
   return (data as Job[]) || []
 }
 
@@ -66,13 +87,21 @@ export default async function HomePage({ searchParams }: PageProps) {
     location: params.location,
   }
 
-  const jobs = await getJobs(filters)
-  const featured = jobs.filter((j) => j.is_featured)
-  const regular = jobs.filter((j) => !j.is_featured)
+  const [jobs, seasonalJobs] = await Promise.all([
+    getJobs(filters),
+    getSeasonalJobs(),
+  ])
+
+  const featured = jobs.filter((j) => j.is_featured && !j.is_seasonal)
+  const regular = jobs.filter((j) => !j.is_featured && !j.is_seasonal)
   const hasFilters = Object.values(filters).some(Boolean)
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
       <Navbar />
 
       <main className="flex-1">
@@ -81,7 +110,7 @@ export default async function HomePage({ searchParams }: PageProps) {
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
             <h1
               className="text-3xl sm:text-5xl font-bold mb-3 leading-tight"
-              style={{ fontFamily: 'var(--font-syne)' }}
+              style={{ fontFamily: 'var(--font-bricolage)' }}
             >
               Βρες τη δουλειά
               <br />
@@ -96,6 +125,38 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
         </section>
 
+        {/* Quick links — cities + categories */}
+        <section className="bg-white border-b border-slate-100">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 space-y-3">
+            {/* Cities */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-xs text-slate-400 font-medium shrink-0">Πόλεις:</span>
+              {Object.entries(CITY_PAGES).map(([slug, city]) => (
+                <Link
+                  key={slug}
+                  href={`/jobs/${slug}`}
+                  className="text-xs text-brand-800 bg-brand-50 hover:bg-brand-100 px-3 py-1 rounded-full transition-colors font-medium"
+                >
+                  {city.name}
+                </Link>
+              ))}
+            </div>
+            {/* Categories */}
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="text-xs text-slate-400 font-medium shrink-0">Κατηγορίες:</span>
+              {JOB_CATEGORIES.map((cat) => (
+                <Link
+                  key={cat}
+                  href={`/jobs/category/${CATEGORY_SLUGS[cat]}`}
+                  className="text-xs text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1 rounded-full transition-colors"
+                >
+                  {cat}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Content */}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="mb-5">
@@ -104,7 +165,6 @@ export default async function HomePage({ searchParams }: PageProps) {
             </Suspense>
           </div>
 
-          {/* Results header */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-slate-500">
               {jobs.length > 0 ? (
@@ -126,6 +186,31 @@ export default async function HomePage({ searchParams }: PageProps) {
               </h2>
               <div className="space-y-3">
                 {featured.map((job) => (
+                  <JobCard key={job.id} job={job} />
+                ))}
+              </div>
+              {(seasonalJobs.length > 0 || regular.length > 0) && (
+                <div className="border-t border-slate-200 mt-6 mb-4" />
+              )}
+            </div>
+          )}
+
+          {/* Seasonal jobs teaser */}
+          {!hasFilters && seasonalJobs.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-seasonal-600 uppercase tracking-wider">
+                  ☀️ Εποχιακές Θέσεις 2025
+                </h2>
+                <Link
+                  href="/seasonal"
+                  className="text-sm text-seasonal-600 hover:text-seasonal-500 font-medium transition-colors"
+                >
+                  Δες όλες →
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {seasonalJobs.map((job) => (
                   <JobCard key={job.id} job={job} />
                 ))}
               </div>

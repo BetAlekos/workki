@@ -8,6 +8,8 @@ export type EmploymentType =
 
 export type SalaryPeriod = 'HOUR' | 'DAY' | 'WEEK' | 'MONTH' | 'YEAR'
 
+export type Season = 'spring' | 'summer' | 'autumn' | 'winter'
+
 export interface Job {
   id: string
   slug: string
@@ -32,6 +34,10 @@ export interface Job {
   valid_through: string | null
   is_approved: boolean
   is_featured: boolean
+  is_seasonal: boolean
+  season: Season | null
+  season_start: string | null
+  season_end: string | null
   created_at: string
 }
 
@@ -60,4 +66,6 @@ export interface JobFilters {
   type?: string
   remote?: string
   location?: string
+  seasonal?: string
+  season?: string
 }

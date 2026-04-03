@@ -11,24 +11,31 @@ export default function Navbar() {
           </div>
           <span
             className="text-xl font-bold text-brand-900 group-hover:text-brand-700 transition-colors"
-            style={{ fontFamily: 'var(--font-syne)' }}
+            style={{ fontFamily: 'var(--font-bricolage)' }}
           >
             {SITE_NAME}
           </span>
         </Link>
 
-        <nav className="flex items-center gap-2 sm:gap-4">
+        <nav className="flex items-center gap-1 sm:gap-3">
           <Link
             href="/"
-            className="text-sm text-slate-600 hover:text-brand-900 transition-colors hidden sm:block"
+            className="text-sm text-slate-600 hover:text-brand-900 transition-colors hidden sm:block px-2 py-1"
           >
             Αγγελίες
+          </Link>
+          <Link
+            href="/seasonal"
+            className="text-sm text-seasonal-600 hover:text-seasonal-500 transition-colors hidden sm:block px-2 py-1 font-medium"
+          >
+            ☀️ Εποχιακές
           </Link>
           <Link
             href="/submit"
             className="text-sm bg-brand-900 text-white px-4 py-2 rounded-lg hover:bg-brand-800 transition-colors font-medium"
           >
-            + Δημοσίευση αγγελίας
+            <span className="hidden sm:inline">+ Δημοσίευση αγγελίας</span>
+            <span className="sm:hidden">+ Αγγελία</span>
           </Link>
         </nav>
       </div>
