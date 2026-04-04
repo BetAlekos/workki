@@ -49,8 +49,20 @@ export default function SubmitPage() {
     }
   }
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      { '@type': 'Question', name: 'Πόσο κοστίζει η δημοσίευση αγγελίας;', acceptedAnswer: { '@type': 'Answer', text: 'Η βασική δημοσίευση είναι εντελώς δωρεάν. Δεν απαιτείται λογαριασμός.' } },
+      { '@type': 'Question', name: 'Πότε θα εμφανιστεί η αγγελία μου;', acceptedAnswer: { '@type': 'Answer', text: 'Μετά από σύντομο έλεγχο από την ομάδα μας, συνήθως εντός 24 ωρών.' } },
+      { '@type': 'Question', name: 'Πού εμφανίζεται η αγγελία;', acceptedAnswer: { '@type': 'Answer', text: 'Στο Workki.gr, στο Google Jobs και στο Google Search μέσω structured data (JSON-LD).' } },
+      { '@type': 'Question', name: 'Πόσο καιρό παραμένει online η αγγελία;', acceptedAnswer: { '@type': 'Answer', text: 'Έως 60 ημέρες ή μέχρι να τη διαγράψεις επικοινωνώντας μαζί μας.' } },
+    ],
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Navbar />
       <main className="flex-1 max-w-2xl mx-auto px-4 sm:px-6 py-10 w-full">
         <Link
@@ -62,6 +74,24 @@ export default function SubmitPage() {
           </svg>
           Πίσω
         </Link>
+
+        {/* Benefits reminder */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+          <p className="text-xs font-semibold text-green-700 uppercase tracking-wider mb-2">Γιατί να δημοσιεύσεις στο Workki;</p>
+          <ul className="space-y-1.5">
+            {[
+              'Δωρεάν δημοσίευση — χωρίς λογαριασμό',
+              'Εμφάνιση στο Google Jobs σε 48 ώρες',
+              'Χιλιάδες job seekers κάθε μέρα',
+              'Εποχιακές αγγελίες με ειδική προβολή',
+            ].map((b) => (
+              <li key={b} className="flex items-start gap-2 text-sm text-green-800">
+                <span className="mt-0.5 shrink-0">✅</span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
           <h1
@@ -365,6 +395,25 @@ export default function SubmitPage() {
               </button>
             </form>
           )}
+        </div>
+        {/* FAQ */}
+        <div className="mt-8">
+          <h2 className="text-lg font-bold text-slate-900 mb-4" style={{ fontFamily: 'var(--font-bricolage)' }}>
+            Συχνές Ερωτήσεις
+          </h2>
+          <div className="space-y-4">
+            {[
+              { q: 'Πόσο κοστίζει;', a: 'Η βασική δημοσίευση είναι εντελώς δωρεάν. Δεν χρειάζεται λογαριασμός.' },
+              { q: 'Πότε θα εμφανιστεί η αγγελία μου;', a: 'Μετά από σύντομο έλεγχο (συνήθως εντός 24 ωρών).' },
+              { q: 'Πού εμφανίζεται η αγγελία;', a: 'Στο Workki.gr, στο Google Jobs και στο Google Search με πλήρη structured data.' },
+              { q: 'Πόσο καιρό παραμένει online;', a: 'Έως 60 ημέρες ή μέχρι να επικοινωνήσεις μαζί μας για διαγραφή.' },
+            ].map(({ q, a }) => (
+              <div key={q} className="border border-slate-200 rounded-xl p-4 bg-white">
+                <p className="font-semibold text-slate-900 text-sm mb-1">{q}</p>
+                <p className="text-sm text-slate-600">{a}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
       <Footer />

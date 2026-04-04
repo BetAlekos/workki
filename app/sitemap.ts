@@ -64,6 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: SITE_URL, lastModified: new Date(), changeFrequency: 'hourly', priority: 1.0 },
     { url: `${SITE_URL}/submit`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${SITE_URL}/pos-leitourgei`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.6 },
     ...cityUrls,
     ...categoryUrls,
     ...seasonalUrls,

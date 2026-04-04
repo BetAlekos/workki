@@ -31,11 +31,31 @@ export default function Navbar() {
             ☀️ Εποχιακές
           </Link>
           <Link
-            href="/submit"
-            className="text-sm bg-brand-900 text-white px-4 py-2 rounded-lg hover:bg-brand-800 transition-colors font-medium"
+            href="/pos-leitourgei"
+            className="text-sm text-slate-600 hover:text-brand-900 transition-colors hidden sm:block px-2 py-1"
           >
-            <span className="hidden sm:inline">+ Δημοσίευση αγγελίας</span>
-            <span className="sm:hidden">+ Αγγελία</span>
+            Πώς λειτουργεί
+          </Link>
+
+          {/* Desktop CTA with badge */}
+          <div className="relative hidden sm:block mt-1">
+            <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full font-bold whitespace-nowrap leading-tight">
+              100% Δωρεάν
+            </span>
+            <Link
+              href="/submit"
+              className="text-sm bg-amber-400 text-amber-900 px-4 py-2 rounded-lg hover:bg-amber-300 transition-colors font-bold"
+            >
+              Δημοσίευσε Δωρεάν →
+            </Link>
+          </div>
+
+          {/* Mobile CTA */}
+          <Link
+            href="/submit"
+            className="sm:hidden text-sm bg-amber-400 text-amber-900 px-3 py-2 rounded-lg hover:bg-amber-300 transition-colors font-bold"
+          >
+            Δωρεάν →
           </Link>
         </nav>
       </div>

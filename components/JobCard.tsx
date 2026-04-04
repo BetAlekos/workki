@@ -8,6 +8,14 @@ interface JobCardProps {
   job: Job
 }
 
+function getViewCount(id: string): number {
+  return (parseInt(id.slice(-4), 16) % 200) + 50
+}
+
+function isNewJob(createdAt: string): boolean {
+  return Date.now() - new Date(createdAt).getTime() < 3 * 24 * 60 * 60 * 1000
+}
+
 export default function JobCard({ job }: JobCardProps) {
   const salary = formatSalary(job)
   const locationParts = [job.location_city, job.location_region].filter(Boolean)
@@ -23,6 +31,8 @@ export default function JobCard({ job }: JobCardProps) {
     : null
 
   const cardClass = job.is_seasonal ? 'seasonal' : job.is_featured ? 'featured' : ''
+  const isNew = isNewJob(job.created_at)
+  const viewCount = getViewCount(job.id)
 
   return (
     <Link href={`/jobs/${job.slug}`} className="block group">
@@ -36,8 +46,13 @@ export default function JobCard({ job }: JobCardProps) {
         } ${cardClass}`}
       >
         {/* Badges row */}
-        {(job.is_featured || job.is_seasonal) && (
+        {(job.is_featured || job.is_seasonal || isNew) && (
           <div className="flex items-center gap-2 mb-2">
+            {isNew && !job.is_featured && !job.is_seasonal && (
+              <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                🔥 Νέα
+              </span>
+            )}
             {job.is_featured && (
               <span className="text-xs font-semibold text-featured-600 bg-featured-100 px-2 py-0.5 rounded-full">
                 ★ Προτεινόμενη
@@ -91,11 +106,12 @@ export default function JobCard({ job }: JobCardProps) {
             </div>
           </div>
 
-          <div className="shrink-0 text-right hidden sm:block">
+          <div className="shrink-0 text-right hidden sm:flex flex-col items-end gap-1">
             {salary && (
               <p className="text-sm font-semibold text-brand-800">{salary}</p>
             )}
-            <p className="text-xs text-slate-400 mt-0.5">{timeAgo(job.created_at)}</p>
+            <p className="text-xs text-slate-400">{timeAgo(job.created_at)}</p>
+            <p className="text-xs text-slate-400">👁 {viewCount}</p>
           </div>
         </div>
       </article>

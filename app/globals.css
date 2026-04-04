@@ -62,6 +62,19 @@ h1, h2, h3, h4, h5, h6 {
   border-left-color: #f97316;
 }
 
+/* Trust bar marquee */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+  will-change: transform;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Prose for job descriptions */
 .job-description h2 { font-size: 1.125rem; font-weight: 600; margin: 1.25rem 0 0.5rem; font-family: var(--font-bricolage), sans-serif; }
 .job-description h3 { font-size: 1rem; font-weight: 600; margin: 1rem 0 0.5rem; }
