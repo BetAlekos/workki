@@ -38,6 +38,7 @@ export interface Job {
   season: Season | null
   season_start: string | null
   season_end: string | null
+  view_count: number
   created_at: string
 }
 

@@ -154,17 +154,23 @@ export default function SubmitPage() {
           </p>
 
           {state === 'success' ? (
-            <div className="text-center py-10">
-              <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-lg font-semibold text-slate-800 mb-2">Η αγγελία υποβλήθηκε!</h2>
-              <p className="text-slate-500 text-sm mb-5">Θα σας ειδοποιήσουμε μόλις εγκριθεί.</p>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">Η αγγελία υποβλήθηκε!</h2>
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-left my-4 space-y-2 text-sm">
+                <p className="font-semibold text-amber-900">Τι γίνεται τώρα:</p>
+                <p className="text-amber-800">⏳ Η ομάδα μας ελέγχει την αγγελία <strong>(εντός 24 ωρών)</strong></p>
+                <p className="text-amber-800">✅ Μετά την έγκριση εμφανίζεται στο Workki.gr</p>
+                <p className="text-amber-800">🔍 Ευρετηρίαση στο Google Jobs σε <strong>48 ώρες</strong></p>
+              </div>
+              <p className="text-slate-400 text-xs mb-5">Η αγγελία <strong>αποθηκεύτηκε</strong> και αναμένει έγκριση.</p>
               <button
                 onClick={() => setState('idle')}
-                className="text-sm text-brand-800 hover:text-brand-900 font-medium"
+                className="text-sm bg-brand-900 text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-brand-800 transition-colors"
               >
                 Υποβολή νέας αγγελίας →
               </button>
@@ -489,7 +495,8 @@ export default function SubmitPage() {
 
               {state === 'error' && (
                 <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
-                  {errorMsg}
+                  <p className="font-semibold mb-0.5">Σφάλμα υποβολής</p>
+                  <p>{errorMsg}</p>
                 </div>
               )}
 

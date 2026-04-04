@@ -208,6 +208,11 @@ function AdminJobRow({ job, approveJob, rejectJob, toggleFeatured, isPending, ap
                 📩 {applications.length} αιτήσεις
               </span>
             )}
+            {job.view_count > 0 && (
+              <span className="text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full shrink-0">
+                👁 {job.view_count.toLocaleString('el-GR')}
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
             {job.company_name} · {formatEmploymentType(job.employment_type)} · {job.category}

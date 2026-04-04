@@ -106,6 +106,15 @@ async function getCompanyCount(): Promise<number> {
   return new Set((data || []).map((r: { company_name: string }) => r.company_name)).size
 }
 
+async function getPopularJobs(): Promise<Job[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('jobs').select('*').eq('is_approved', true).gt('view_count', 5)
+    .order('view_count', { ascending: false })
+    .limit(3)
+  return (data as Job[]) || []
+}
+
 async function getNewThisWeek(): Promise<Job[]> {
   const supabase = await createClient()
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -148,8 +157,8 @@ export default async function HomePage({ searchParams }: PageProps) {
     remote: params.remote, location: params.location,
   }
 
-  const [jobs, seasonalJobs, jobCount, companyCount, newThisWeek] = await Promise.all([
-    getJobs(filters), getSeasonalJobs(), getJobCount(), getCompanyCount(), getNewThisWeek(),
+  const [jobs, seasonalJobs, jobCount, companyCount, newThisWeek, popularJobs] = await Promise.all([
+    getJobs(filters), getSeasonalJobs(), getJobCount(), getCompanyCount(), getNewThisWeek(), getPopularJobs(),
   ])
 
   const featured = jobs.filter((j) => j.is_featured && !j.is_seasonal)
@@ -418,6 +427,21 @@ export default async function HomePage({ searchParams }: PageProps) {
               </div>
               <div className="space-y-3">
                 {newThisWeek.map((job) => <JobCard key={job.id} job={job} />)}
+              </div>
+              {regular.length > 0 && <div className="border-t border-slate-200 mt-6 mb-4" />}
+            </div>
+          )}
+
+          {/* Popular jobs */}
+          {!hasFilters && popularJobs.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                  🔥 Δημοφιλείς αγγελίες
+                </h2>
+              </div>
+              <div className="space-y-3">
+                {popularJobs.map((job) => <JobCard key={job.id} job={job} />)}
               </div>
               {regular.length > 0 && <div className="border-t border-slate-200 mt-6 mb-4" />}
             </div>

@@ -10,10 +10,6 @@ interface JobCardProps {
   job: Job
 }
 
-function getViewCount(id: string): number {
-  return (parseInt(id.slice(-4), 16) % 200) + 50
-}
-
 function isNewJob(createdAt: string): boolean {
   return Date.now() - new Date(createdAt).getTime() < 3 * 24 * 60 * 60 * 1000
 }
@@ -34,7 +30,6 @@ export default function JobCard({ job }: JobCardProps) {
 
   const cardClass = job.is_seasonal ? 'seasonal' : job.is_featured ? 'featured' : ''
   const isNew = isNewJob(job.created_at)
-  const viewCount = getViewCount(job.id)
   const hasQuickApply = !!job.apply_email && !job.apply_url
 
   return (
@@ -121,7 +116,9 @@ export default function JobCard({ job }: JobCardProps) {
                 <p className="text-sm font-semibold text-brand-800">{salary}</p>
               )}
               <p className="text-xs text-slate-400">{timeAgo(job.created_at)}</p>
-              <p className="text-xs text-slate-400">👁 {viewCount}</p>
+              {(job.view_count ?? 0) > 0 && (
+                <p className="text-xs text-slate-400">👁 {job.view_count.toLocaleString('el-GR')}</p>
+              )}
             </div>
           </div>
 

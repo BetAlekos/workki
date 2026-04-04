@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import JobCard from '@/components/JobCard'
 import { createClient } from '@/lib/supabase/server'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import type { Job } from '@/types'
 import { formatEmploymentType, formatSalary, formatDate } from '@/lib/utils'
 import { SITE_URL, SITE_NAME, CATEGORY_SLUGS } from '@/lib/constants'
@@ -208,6 +209,13 @@ export default async function JobPage({ params }: PageProps) {
   const job = await getJob(slug)
   if (!job) notFound()
 
+  // Increment view count (fire-and-forget, don't block render)
+  supabaseAdmin
+    .from('jobs')
+    .update({ view_count: (job.view_count ?? 0) + 1 })
+    .eq('id', job.id)
+    .then(() => {})
+
   const [related] = await Promise.all([getRelatedJobs(job)])
 
   const salary = formatSalary(job)
@@ -363,6 +371,12 @@ export default async function JobPage({ params }: PageProps) {
               )}
 
               <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                {job.view_count > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Προβολές</span>
+                    <span className="text-slate-700 font-medium">{job.view_count.toLocaleString('el-GR')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Δημοσιεύτηκε</span>
                   <span className="text-slate-700 font-medium">{formatDate(job.date_posted)}</span>
