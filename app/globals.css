@@ -57,6 +57,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 .job-card.featured {
   border-left-color: #f59e0b;
+  animation: featured-glow 3s ease-in-out infinite;
+}
+
+@keyframes featured-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  50%       { box-shadow: 0 0 14px 3px rgba(245, 158, 11, 0.22); }
 }
 .job-card.seasonal {
   border-left-color: #f97316;

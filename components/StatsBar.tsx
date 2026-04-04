@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-function useCountUp(target: number, duration = 1400) {
+function useCountUp(target: number, duration = 1400, triggered: boolean) {
   const [value, setValue] = useState(0)
   const ran = useRef(false)
   useEffect(() => {
-    if (ran.current || target === 0) return
+    if (!triggered || ran.current || target === 0) return
     ran.current = true
     const startTime = performance.now()
     const tick = (now: number) => {
@@ -16,16 +16,35 @@ function useCountUp(target: number, duration = 1400) {
       if (progress < 1) requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
-  }, [target, duration])
+  }, [target, duration, triggered])
   return value
 }
 
 export default function StatsBar({ jobCount, companyCount }: { jobCount: number; companyCount: number }) {
-  const jobs = useCountUp(jobCount)
-  const companies = useCountUp(companyCount)
+  const [inView, setInView] = useState(false)
+  const ref = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const jobs = useCountUp(jobCount, 1400, inView)
+  const companies = useCountUp(companyCount, 1400, inView)
 
   return (
-    <section className="bg-white border-b border-slate-100">
+    <section ref={ref} className="bg-white border-b border-slate-100">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           <div>

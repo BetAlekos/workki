@@ -77,18 +77,18 @@ async function getCompanyCount(): Promise<number> {
 // ── Trust bar data ─────────────────────────────────────────────────────────
 
 const TRUST_COMPANIES = [
-  { name: 'Skroutz',     color: 'bg-orange-100 text-orange-700' },
-  { name: 'Blueground',  color: 'bg-blue-100 text-blue-700' },
-  { name: 'Eurobank',    color: 'bg-sky-100 text-sky-700' },
-  { name: 'Upstream',    color: 'bg-purple-100 text-purple-700' },
-  { name: 'Spotawheel',  color: 'bg-green-100 text-green-700' },
-  { name: 'efood',       color: 'bg-red-100 text-red-700' },
-  { name: 'Epignosis',   color: 'bg-indigo-100 text-indigo-700' },
-  { name: 'Hack The Box','color': 'bg-emerald-100 text-emerald-700' },
-  { name: 'AVIS Greece', color: 'bg-yellow-100 text-yellow-700' },
-  { name: 'Volton',      color: 'bg-teal-100 text-teal-700' },
-  { name: 'Mandynamic',  color: 'bg-pink-100 text-pink-700' },
-  { name: 'Omilia',      color: 'bg-violet-100 text-violet-700' },
+  { name: 'Skroutz',      avatar: 'bg-orange-500' },
+  { name: 'Blueground',   avatar: 'bg-blue-600' },
+  { name: 'Eurobank',     avatar: 'bg-sky-600' },
+  { name: 'Upstream',     avatar: 'bg-purple-600' },
+  { name: 'Spotawheel',   avatar: 'bg-green-600' },
+  { name: 'efood',        avatar: 'bg-red-500' },
+  { name: 'Epignosis',    avatar: 'bg-indigo-600' },
+  { name: 'Hack The Box', avatar: 'bg-emerald-600' },
+  { name: 'AVIS Greece',  avatar: 'bg-yellow-500' },
+  { name: 'Volton',       avatar: 'bg-teal-600' },
+  { name: 'Mandynamic',   avatar: 'bg-pink-600' },
+  { name: 'Omilia',       avatar: 'bg-violet-600' },
 ]
 
 // ── Page ──────────────────────────────────────────────────────────────────
@@ -126,7 +126,7 @@ export default async function HomePage({ searchParams }: PageProps) {
 
               {/* Left — Job seekers */}
               <div>
-                <h1 className="text-3xl sm:text-5xl font-bold mb-3 leading-tight" style={{ fontFamily: 'var(--font-bricolage)' }}>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 leading-tight" style={{ fontFamily: 'var(--font-bricolage)' }}>
                   Βρες τη δουλειά
                   <br />
                   <span className="text-brand-300">που αξίζεις.</span>
@@ -176,8 +176,11 @@ export default async function HomePage({ searchParams }: PageProps) {
               {[...TRUST_COMPANIES, ...TRUST_COMPANIES].map((c, i) => (
                 <span
                   key={i}
-                  className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shrink-0 ${c.color}`}
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold shrink-0 bg-white border border-slate-200 shadow-sm text-slate-700"
                 >
+                  <span className={`w-5 h-5 rounded-full ${c.avatar} flex items-center justify-center text-[10px] font-bold text-white shrink-0`}>
+                    {c.name.charAt(0)}
+                  </span>
                   {c.name}
                 </span>
               ))}
@@ -212,6 +215,15 @@ export default async function HomePage({ searchParams }: PageProps) {
             </div>
           </div>
         </section>
+
+        {/* ── Google Jobs announcement banner ──────────────────────────── */}
+        <div className="bg-amber-400 border-y border-amber-500">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 text-center">
+            <p className="text-amber-900 text-sm font-medium">
+              🎉 <strong>Νέο:</strong> Οι αγγελίες σου εμφανίζονται αυτόματα στο Google Jobs — χωρίς καμία επιπλέον ενέργεια
+            </p>
+          </div>
+        </div>
 
         {/* ── Employer Value Proposition ───────────────────────────────── */}
         {!hasFilters && (
@@ -302,9 +314,13 @@ export default async function HomePage({ searchParams }: PageProps) {
 
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-slate-500">
-              {jobs.length > 0 ? (
-                <><span className="font-semibold text-slate-800">{jobs.length}</span> αγγελίες{hasFilters && ' βρέθηκαν'}</>
-              ) : 'Δεν βρέθηκαν αγγελίες'}
+              {hasFilters ? (
+                jobs.length > 0
+                  ? <><span className="font-semibold text-slate-800">{jobs.length}</span> αγγελίες βρέθηκαν</>
+                  : 'Δεν βρέθηκαν αγγελίες'
+              ) : (
+                <><span className="font-semibold text-slate-800">{jobCount}</span> αγγελίες</>
+              )}
             </p>
           </div>
 
