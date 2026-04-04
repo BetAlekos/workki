@@ -34,18 +34,7 @@ export const SALARY_PERIOD_LABELS: Record<string, string> = {
   YEAR: 'ανά έτος',
 }
 
-export const GREEK_CITIES = [
-  'Αθήνα',
-  'Θεσσαλονίκη',
-  'Πάτρα',
-  'Ηράκλειο',
-  'Λάρισα',
-  'Βόλος',
-  'Ρόδος',
-  'Ιωάννινα',
-  'Κέρκυρα',
-  'Χανιά',
-]
+export { GREEK_CITIES, GREEK_REGIONS } from '@/lib/greek-locations'
 
 // Category slug mapping (Greek → URL-safe)
 export const CATEGORY_SLUGS: Record<string, string> = {

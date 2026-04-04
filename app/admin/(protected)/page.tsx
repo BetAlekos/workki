@@ -54,6 +54,23 @@ export default async function AdminPage() {
   const pendingJobs = (pending as Job[]) || []
   const approvedJobs = (approved as Job[]) || []
 
+  // Fetch application counts + applicants for all visible jobs
+  const allJobIds = [...pendingJobs, ...approvedJobs].map((j) => j.id)
+  const { data: applications } = allJobIds.length
+    ? await supabase
+        .from('applications')
+        .select('id, job_id, name, email, phone, message, created_at')
+        .in('job_id', allJobIds)
+        .order('created_at', { ascending: false })
+    : { data: [] }
+
+  // Group by job_id
+  type AppRow = { id: string; job_id: string; name: string; email: string; phone: string | null; message: string | null; created_at: string }
+  const appsByJob = ((applications || []) as AppRow[]).reduce<Record<string, AppRow[]>>((acc, a) => {
+    ;(acc[a.job_id] = acc[a.job_id] || []).push(a)
+    return acc
+  }, {})
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Top bar */}
@@ -122,6 +139,7 @@ export default async function AdminPage() {
                   rejectJob={rejectJob}
                   toggleFeatured={toggleFeatured}
                   isPending
+                  applications={appsByJob[job.id] || []}
                 />
               ))}
             </div>
@@ -151,6 +169,7 @@ export default async function AdminPage() {
                   rejectJob={rejectJob}
                   toggleFeatured={toggleFeatured}
                   isPending={false}
+                  applications={appsByJob[job.id] || []}
                 />
               ))}
             </div>
@@ -161,15 +180,18 @@ export default async function AdminPage() {
   )
 }
 
+type AppRow = { id: string; job_id: string; name: string; email: string; phone: string | null; message: string | null; created_at: string }
+
 interface AdminJobRowProps {
   job: Job
   approveJob: (id: string) => Promise<void>
   rejectJob: (id: string) => Promise<void>
   toggleFeatured: (id: string, current: boolean) => Promise<void>
   isPending: boolean
+  applications: AppRow[]
 }
 
-function AdminJobRow({ job, approveJob, rejectJob, toggleFeatured, isPending }: AdminJobRowProps) {
+function AdminJobRow({ job, approveJob, rejectJob, toggleFeatured, isPending, applications }: AdminJobRowProps) {
   return (
     <div className={`bg-white rounded-xl border ${isPending ? 'border-amber-200' : 'border-slate-200'} p-4`}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -179,6 +201,11 @@ function AdminJobRow({ job, approveJob, rejectJob, toggleFeatured, isPending }: 
             {job.is_featured && (
               <span className="text-xs text-featured-600 bg-featured-100 px-1.5 py-0.5 rounded-full shrink-0">
                 ★ Featured
+              </span>
+            )}
+            {applications.length > 0 && (
+              <span className="text-xs text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full shrink-0">
+                📩 {applications.length} αιτήσεις
               </span>
             )}
           </div>
@@ -248,6 +275,33 @@ function AdminJobRow({ job, approveJob, rejectJob, toggleFeatured, isPending }: 
           </form>
         </div>
       </div>
+
+      {/* Applications — native expand/collapse with <details> */}
+      {applications.length > 0 && (
+        <details className="mt-3 pt-3 border-t border-slate-100">
+          <summary className="text-xs font-semibold text-blue-700 cursor-pointer select-none list-none flex items-center gap-1 w-fit">
+            <span className="inline-block transition-transform [details[open]_&]:rotate-90">▶</span>
+            📩 {applications.length} αιτήσεις — κλικ για προβολή
+          </summary>
+          <div className="mt-3 space-y-2">
+            {applications.map((app) => (
+              <div key={app.id} className="bg-slate-50 rounded-lg p-3 text-xs">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div>
+                    <p className="font-semibold text-slate-800">{app.name}</p>
+                    <a href={`mailto:${app.email}`} className="text-blue-600 hover:underline">{app.email}</a>
+                    {app.phone && <span className="text-slate-500 ml-2">· {app.phone}</span>}
+                  </div>
+                  <span className="text-slate-400 shrink-0">{formatDate(app.created_at)}</span>
+                </div>
+                {app.message && (
+                  <p className="text-slate-600 mt-1.5 line-clamp-2">{app.message}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
     </div>
   )
 }

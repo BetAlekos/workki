@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { SITE_NAME } from '@/lib/constants'
+import SavedNavBadge from '@/components/SavedNavBadge'
 
 export default function Navbar() {
   return (
@@ -48,6 +49,8 @@ export default function Navbar() {
           >
             Η ιστορία μας
           </Link>
+
+          <SavedNavBadge />
 
           {/* Desktop CTA with badge */}
           <div className="relative hidden sm:block mt-1">

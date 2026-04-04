@@ -7,15 +7,47 @@ import JobCard from '@/components/JobCard'
 import SearchBar from '@/components/SearchBar'
 import FilterBar from '@/components/FilterBar'
 import StatsBar from '@/components/StatsBar'
+import JobAlertBar from '@/components/JobAlertBar'
 import { createClient } from '@/lib/supabase/server'
 import type { Job, JobFilters } from '@/types'
 import { SITE_NAME, SITE_DESCRIPTION, SITE_URL, CITY_PAGES, CATEGORY_SLUGS, JOB_CATEGORIES } from '@/lib/constants'
 
 export const revalidate = 3600
 
-export const metadata: Metadata = {
-  title: `${SITE_NAME} — Αγγελίες Εργασίας στην Ελλάδα`,
-  description: SITE_DESCRIPTION,
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const params = await searchParams
+  const q = params.q?.trim()
+  const city = params.location?.trim()
+  const category = params.category?.trim()
+
+  if (q && city) {
+    return {
+      title: `${q} — Αγγελίες Εργασίας ${city} | ${SITE_NAME}`,
+      description: `Βρες ${q} δουλειά στην ${city}. Ανοιχτές θέσεις από τις καλύτερες εταιρείες.`,
+    }
+  }
+  if (q) {
+    return {
+      title: `"${q}" — Αγγελίες Εργασίας | ${SITE_NAME}`,
+      description: `Αποτελέσματα για "${q}". Βρες τη δουλειά που σου ταιριάζει στο Workki.`,
+    }
+  }
+  if (category && city) {
+    return {
+      title: `${category} — Αγγελίες ${city} | ${SITE_NAME}`,
+      description: `Αγγελίες εργασίας ${category} στην ${city}. Ανοιχτές θέσεις τώρα.`,
+    }
+  }
+  if (category) {
+    return {
+      title: `Αγγελίες ${category} | ${SITE_NAME}`,
+      description: `Αγγελίες εργασίας για ${category} σε όλη την Ελλάδα. Βρες την επόμενη θέση σου.`,
+    }
+  }
+  return {
+    title: `${SITE_NAME} — Αγγελίες Εργασίας στην Ελλάδα`,
+    description: SITE_DESCRIPTION,
+  }
 }
 
 const websiteJsonLd = {
@@ -74,6 +106,18 @@ async function getCompanyCount(): Promise<number> {
   return new Set((data || []).map((r: { company_name: string }) => r.company_name)).size
 }
 
+async function getNewThisWeek(): Promise<Job[]> {
+  const supabase = await createClient()
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data } = await supabase
+    .from('jobs').select('*').eq('is_approved', true).eq('is_seasonal', false)
+    .eq('is_featured', false)
+    .gte('created_at', weekAgo)
+    .order('created_at', { ascending: false })
+    .limit(3)
+  return (data as Job[]) || []
+}
+
 // ── Trust bar data ─────────────────────────────────────────────────────────
 
 const TRUST_COMPANIES = [
@@ -104,8 +148,8 @@ export default async function HomePage({ searchParams }: PageProps) {
     remote: params.remote, location: params.location,
   }
 
-  const [jobs, seasonalJobs, jobCount, companyCount] = await Promise.all([
-    getJobs(filters), getSeasonalJobs(), getJobCount(), getCompanyCount(),
+  const [jobs, seasonalJobs, jobCount, companyCount, newThisWeek] = await Promise.all([
+    getJobs(filters), getSeasonalJobs(), getJobCount(), getCompanyCount(), getNewThisWeek(),
   ])
 
   const featured = jobs.filter((j) => j.is_featured && !j.is_seasonal)
@@ -191,6 +235,9 @@ export default async function HomePage({ searchParams }: PageProps) {
 
         {/* ── Stats Bar ────────────────────────────────────────────────── */}
         <StatsBar jobCount={jobCount} companyCount={companyCount} />
+
+        {/* ── Job Alert Bar (client, shows after 5s) ───────────────────── */}
+        <JobAlertBar />
 
         {/* ── Quick links — cities + categories ────────────────────────── */}
         <section className="bg-white border-b border-slate-100">
@@ -355,6 +402,27 @@ export default async function HomePage({ searchParams }: PageProps) {
             </div>
           )}
 
+          {/* New this week */}
+          {!hasFilters && newThisWeek.length > 0 && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                  🆕 Νέες αυτή την εβδομάδα
+                  <span className="ml-2 text-xs font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full normal-case tracking-normal">
+                    {newThisWeek.length}
+                  </span>
+                </h2>
+                <a href="/?sort=newest" className="text-sm text-brand-700 hover:text-brand-600 font-medium transition-colors">
+                  Δες όλες →
+                </a>
+              </div>
+              <div className="space-y-3">
+                {newThisWeek.map((job) => <JobCard key={job.id} job={job} />)}
+              </div>
+              {regular.length > 0 && <div className="border-t border-slate-200 mt-6 mb-4" />}
+            </div>
+          )}
+
           {/* Regular */}
           {(hasFilters ? jobs : regular).length > 0 ? (
             <div className="space-y-3">
@@ -369,6 +437,56 @@ export default async function HomePage({ searchParams }: PageProps) {
               <p className="text-sm">Δοκίμασε διαφορετικά κριτήρια αναζήτησης.</p>
             </div>
           )}
+          {/* Related Searches */}
+          {(() => {
+            type Pill = { label: string; href: string }
+            let pills: Pill[] = []
+            const TOP_CITIES = ['Αθήνα', 'Θεσσαλονίκη', 'Ηράκλειο', 'Πάτρα']
+            const TOP_CATS = ['Πληροφορική & Τεχνολογία', 'Πωλήσεις & Marketing', 'Τουρισμός & Φιλοξενία']
+
+            if (filters.location && !filters.category) {
+              pills = TOP_CATS.map((cat) => ({
+                label: `${cat} ${filters.location}`,
+                href: `/?category=${encodeURIComponent(cat)}&location=${encodeURIComponent(filters.location!)}`,
+              }))
+            } else if (filters.category && !filters.location) {
+              pills = TOP_CITIES.map((city) => ({
+                label: `${filters.category} ${city}`,
+                href: `/?category=${encodeURIComponent(filters.category!)}&location=${encodeURIComponent(city)}`,
+              }))
+            } else {
+              pills = [
+                { label: 'Developer Αθήνα',            href: '/?q=developer&location=%CE%91%CE%B8%CE%AE%CE%BD%CE%B1' },
+                { label: 'Remote εργασία',              href: '/?remote=true' },
+                { label: 'Πλήρης Απασχόληση Αθήνα',    href: '/?type=FULL_TIME&location=%CE%91%CE%B8%CE%AE%CE%BD%CE%B1' },
+                { label: 'Εποχιακή Κρήτη',             href: '/seasonal/kritis' },
+                { label: 'Λογιστής Θεσσαλονίκη',       href: '/?q=%CE%BB%CE%BF%CE%B3%CE%B9%CF%83%CF%84&location=%CE%98%CE%B5%CF%83%CF%83%CE%B1%CE%BB%CE%BF%CE%BD%CE%AF%CE%BA%CE%B7' },
+                { label: 'Marketing Αθήνα',             href: `/?category=${encodeURIComponent('Πωλήσεις & Marketing')}&location=%CE%91%CE%B8%CE%AE%CE%BD%CE%B1` },
+                { label: 'IT Αθήνα',                   href: `/?category=${encodeURIComponent('Πληροφορική & Τεχνολογία')}&location=%CE%91%CE%B8%CE%AE%CE%BD%CE%B1` },
+                { label: 'Ξενοδοχείο Κρήτη',           href: `/?category=${encodeURIComponent('Τουρισμός & Φιλοξενία')}&location=%CE%97%CF%81%CE%AC%CE%BA%CE%BB%CE%B5%CE%B9%CE%BF` },
+                { label: 'Πωλητής Αθήνα',              href: '/?q=%CF%80%CF%89%CE%BB%CE%B7%CF%84&location=%CE%91%CE%B8%CE%AE%CE%BD%CE%B1' },
+              ]
+            }
+
+            return (
+              <div className="mt-10 pt-8 border-t border-slate-100">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  Σχετικές αναζητήσεις
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {pills.map((p) => (
+                    <a
+                      key={p.label}
+                      href={p.href}
+                      className="text-xs text-slate-600 bg-slate-100 hover:bg-brand-50 hover:text-brand-800 px-3 py-1.5 rounded-full transition-colors"
+                    >
+                      {p.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )
+          })()}
         </section>
       </main>
 
