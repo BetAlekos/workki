@@ -11,6 +11,8 @@ type FormState = 'idle' | 'loading' | 'success' | 'error'
 export default function SubmitPage() {
   const [state, setState] = useState<FormState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [applyMethod, setApplyMethod] = useState<'url' | 'email'>('url')
+  const [applyWarning, setApplyWarning] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -19,6 +21,14 @@ export default function SubmitPage() {
 
     const form = e.currentTarget
     const data = Object.fromEntries(new FormData(form).entries())
+
+    // Validate apply method — at least one must be filled
+    if (!data.apply_url && !data.apply_email) {
+      setApplyWarning(true)
+      setState('idle')
+      return
+    }
+    setApplyWarning(false)
 
     try {
       const res = await fetch('/api/jobs', {
@@ -33,6 +43,7 @@ export default function SubmitPage() {
           season: data.season || null,
           season_start: data.season_start || null,
           season_end: data.season_end || null,
+          valid_through: data.valid_through || null,
         }),
       })
 
@@ -359,25 +370,83 @@ export default function SubmitPage() {
 
               {/* Apply */}
               <fieldset className="space-y-4">
-                <legend className="text-sm font-semibold text-slate-700 mb-1">Τρόπος αίτησης</legend>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">URL αίτησης</label>
-                  <input
-                    name="apply_url"
-                    type="url"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    placeholder="https://..."
-                  />
+                <legend className="text-sm font-semibold text-slate-700">
+                  Πώς θα κάνουν αίτηση οι υποψήφιοι;
+                </legend>
+
+                {/* Toggle */}
+                <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm font-medium w-fit">
+                  <button
+                    type="button"
+                    onClick={() => { setApplyMethod('url'); setApplyWarning(false) }}
+                    className={`px-4 py-2 transition-colors ${applyMethod === 'url' ? 'bg-brand-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    🔗 Μέσω Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setApplyMethod('email'); setApplyWarning(false) }}
+                    className={`px-4 py-2 border-l border-slate-200 transition-colors ${applyMethod === 'email' ? 'bg-brand-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    ✉ Μέσω Email
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Email αίτησης</label>
-                  <input
-                    name="apply_email"
-                    type="email"
-                    className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-                    placeholder="jobs@company.gr"
-                  />
-                </div>
+
+                {applyMethod === 'url' && (
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Link αίτησης
+                    </label>
+                    <input
+                      name="apply_url"
+                      type="url"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      placeholder="π.χ. https://apply.workable.com/mycompany/j/ABC123/"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">
+                      Σύνδεσμος στη φόρμα αίτησής σας (Workable, LinkedIn, careers page κλπ)
+                    </p>
+                  </div>
+                )}
+
+                {applyMethod === 'email' && (
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      Email αποστολής βιογραφικού
+                    </label>
+                    <input
+                      name="apply_email"
+                      type="email"
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      placeholder="π.χ. hr@mycompany.gr"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">
+                      Οι υποψήφιοι θα στέλνουν το βιογραφικό τους εδώ
+                    </p>
+                  </div>
+                )}
+
+                {applyWarning && (
+                  <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    ⚠️ Παρακαλώ συμπλήρωσε τουλάχιστον έναν τρόπο αίτησης
+                  </p>
+                )}
+              </fieldset>
+
+              {/* Valid through */}
+              <fieldset>
+                <legend className="text-sm font-semibold text-slate-700 mb-3">
+                  Λήξη αγγελίας (προαιρετικό)
+                </legend>
+                <input
+                  name="valid_through"
+                  type="date"
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+                <p className="text-xs text-slate-400 mt-1">
+                  Αφήστε κενό αν δεν έχει ημερομηνία λήξης
+                </p>
               </fieldset>
 
               {state === 'error' && (
