@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     apply_url: (body.apply_url as string | undefined)?.trim() || null,
     apply_email: (body.apply_email as string | undefined)?.trim() || null,
     date_posted: today,
-    valid_through: null,
+    valid_through: (body.valid_through as string | undefined) || null,
     is_approved: false, // always false — admin must approve
     is_featured: false,
   }

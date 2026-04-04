@@ -36,6 +36,18 @@ export default function Navbar() {
           >
             Πώς λειτουργεί
           </Link>
+          <Link
+            href="/pricing"
+            className="text-sm text-slate-600 hover:text-brand-900 transition-colors hidden sm:block px-2 py-1"
+          >
+            Τιμές
+          </Link>
+          <Link
+            href="/about"
+            className="text-sm text-slate-600 hover:text-brand-900 transition-colors hidden sm:block px-2 py-1"
+          >
+            Η ιστορία μας
+          </Link>
 
           {/* Desktop CTA with badge */}
           <div className="relative hidden sm:block mt-1">

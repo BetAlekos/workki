@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
@@ -13,6 +13,12 @@ export default function SubmitPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [applyMethod, setApplyMethod] = useState<'url' | 'email'>('url')
   const [applyWarning, setApplyWarning] = useState(false)
+  const [isFeaturedPlan, setIsFeaturedPlan] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('plan') === 'featured') setIsFeaturedPlan(true)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -30,26 +36,45 @@ export default function SubmitPage() {
     }
     setApplyWarning(false)
 
+    const jobPayload = {
+      ...data,
+      is_remote: data.is_remote === 'true',
+      is_seasonal: data.is_seasonal === 'true',
+      salary_min: data.salary_min ? Number(data.salary_min) : null,
+      salary_max: data.salary_max ? Number(data.salary_max) : null,
+      season: data.season || null,
+      season_start: data.season_start || null,
+      season_end: data.season_end || null,
+      valid_through: data.valid_through || null,
+    }
+
     try {
       const res = await fetch('/api/jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          is_remote: data.is_remote === 'true',
-          is_seasonal: data.is_seasonal === 'true',
-          salary_min: data.salary_min ? Number(data.salary_min) : null,
-          salary_max: data.salary_max ? Number(data.salary_max) : null,
-          season: data.season || null,
-          season_start: data.season_start || null,
-          season_end: data.season_end || null,
-          valid_through: data.valid_through || null,
-        }),
+        body: JSON.stringify(jobPayload),
       })
 
       if (!res.ok) {
         const err = await res.json()
         throw new Error(err.error || 'Κάτι πήγε στραβά.')
+      }
+
+      const { id: jobId } = await res.json()
+
+      // Featured plan → redirect to Stripe checkout
+      if (isFeaturedPlan) {
+        const checkoutRes = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: 'featured_single', jobId }),
+        })
+        const checkout = await checkoutRes.json()
+        if (checkout.url) {
+          window.location.href = checkout.url
+          return
+        }
+        throw new Error(checkout.error || 'Αποτυχία ανακατεύθυνσης στο checkout.')
       }
 
       setState('success')
@@ -85,6 +110,19 @@ export default function SubmitPage() {
           </svg>
           Πίσω
         </Link>
+
+        {/* Featured plan banner */}
+        {isFeaturedPlan && (
+          <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 mb-4 flex items-start gap-3">
+            <span className="text-2xl shrink-0">⭐</span>
+            <div>
+              <p className="font-semibold text-amber-900 text-sm">Επιλέξατε Featured — €19,99 + ΦΠΑ</p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                Η αγγελία σου θα εμφανίζεται πρώτη με amber highlight. Θα ανακατευθυνθείς στο Stripe μετά την υποβολή.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Benefits reminder */}
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
@@ -460,8 +498,29 @@ export default function SubmitPage() {
                 disabled={state === 'loading'}
                 className="w-full bg-brand-900 text-white font-semibold py-3 px-6 rounded-xl hover:bg-brand-800 transition-colors disabled:opacity-60 disabled:cursor-not-allowed text-base"
               >
-                {state === 'loading' ? 'Υποβολή...' : 'Υποβολή αγγελίας'}
+                {state === 'loading'
+                  ? (isFeaturedPlan ? 'Ανακατεύθυνση στο Stripe...' : 'Υποβολή...')
+                  : (isFeaturedPlan ? 'Υποβολή & Πληρωμή →' : 'Υποβολή αγγελίας')}
               </button>
+
+              {!isFeaturedPlan && (
+                <>
+                  <div className="flex items-center gap-3 my-1">
+                    <div className="flex-1 h-px bg-slate-200" />
+                    <span className="text-xs text-slate-400 font-medium">ή</span>
+                    <div className="flex-1 h-px bg-slate-200" />
+                  </div>
+                  <Link
+                    href="/pricing?plan=featured"
+                    className="block text-center border-2 border-amber-400 text-amber-900 font-bold py-3 px-6 rounded-xl hover:bg-amber-50 transition-colors text-sm"
+                  >
+                    Δημοσίευσε ως Featured για €19,99 →
+                  </Link>
+                  <p className="text-center text-xs text-slate-400">
+                    Εμφανίζεται πρώτη, με amber highlight και ⭐ badge
+                  </p>
+                </>
+              )}
             </form>
           )}
         </div>
