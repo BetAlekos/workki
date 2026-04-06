@@ -304,6 +304,7 @@ export default async function HomePage({ searchParams }: PageProps) {
                     <div className="mt-3 space-y-1.5 text-left bg-slate-50 rounded-xl p-3">
                       <p className="flex justify-between"><span className="text-slate-500">Kariera.gr</span><span className="font-semibold text-red-600">έως €180</span></p>
                       <p className="flex justify-between"><span className="text-slate-500">Skywalker</span><span className="font-semibold text-red-600">€90+</span></p>
+                      <p className="flex justify-between"><span className="text-slate-500">MyJobNow</span><span className="font-semibold text-red-600">€45,99</span></p>
                       <p className="flex justify-between border-t border-slate-200 pt-1.5 mt-1.5"><span className="font-semibold text-slate-900">Workki</span><span className="font-bold text-green-600">€0</span></p>
                     </div>
                   </div>

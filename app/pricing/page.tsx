@@ -196,6 +196,33 @@ export default function PricingPage() {
           </p>
         </section>
 
+        {/* Why Workki comparison */}
+        <section className="max-w-md mx-auto px-4 sm:px-6 pb-10">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <h2 className="text-base font-bold text-slate-900 mb-4" style={{ fontFamily: 'var(--font-bricolage)' }}>
+              Γιατί Workki;
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Kariera.gr</span>
+                <span className="font-semibold text-slate-600">έως €180</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Skywalker</span>
+                <span className="font-semibold text-slate-600">€90+</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">MyJobNow</span>
+                <span className="font-semibold text-slate-600">€45,99</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-200 pt-2 mt-2">
+                <span className="font-bold text-slate-900">Workki</span>
+                <span className="font-bold text-green-600">€0 ✨</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* FAQ */}
         <section className="max-w-3xl mx-auto px-4 sm:px-6 pb-14">
           <h2

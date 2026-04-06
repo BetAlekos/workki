@@ -12,11 +12,13 @@ export const metadata: Metadata = {
 }
 
 const COMPARISON = [
-  { feature: 'Βασική αγγελία',    kariera: '€180',   skywalker: '€90',   myjob: '€45,99', workki: '€0' },
-  { feature: 'Featured αγγελία',  kariera: '€350+',  skywalker: '€180+', myjob: '€125',   workki: '€19,99' },
-  { feature: 'Google Jobs',       kariera: '✅',      skywalker: '✅',    myjob: '❌',      workki: '✅' },
-  { feature: 'Χωρίς λογαριασμό', kariera: '❌',      skywalker: '❌',    myjob: '❌',      workki: '✅' },
-  { feature: 'Εποχιακές',         kariera: '❌',      skywalker: '✅',    myjob: '❌',      workki: '✅' },
+  { feature: 'Βασική αγγελία',    kariera: '€180',   skywalker: '€90',   myjob: '€45,99',  workki: '€0' },
+  { feature: 'Featured αγγελία',  kariera: '€350+',  skywalker: '€180+', myjob: '€125,99', workki: '€19,99' },
+  { feature: 'Google Jobs',       kariera: '✅',      skywalker: '✅',    myjob: '❌',       workki: '✅' },
+  { feature: 'Χωρίς λογαριασμό', kariera: '❌',      skywalker: '❌',    myjob: '❌',       workki: '✅' },
+  { feature: 'Εποχιακές',         kariera: '❌',      skywalker: '✅',    myjob: '❌',       workki: '✅' },
+  { feature: 'Γρήγορη Αίτηση',   kariera: '❌',      skywalker: '❌',    myjob: '✅',       workki: '✅' },
+  { feature: 'Αποθήκευση αγγελίας', kariera: '❌',   skywalker: '❌',    myjob: '❌',       workki: '✅' },
 ]
 
 export default function AboutPage() {
